@@ -1,20 +1,58 @@
-import { ContactForm } from './ContactForm';
-import { Filter } from './Filter';
-import { ContactList } from './ContactList';
-import { Div, WrapPhonebook, Title, WrapContacts, Contacts } from './AppStyled';
+import { useEffect } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { Layout } from './Layout';
+import { useDispatch } from 'react-redux';
+import { refreshUser } from '../redux/auth/operations';
+import { PrivateRoute } from '../hooks/PrivateRoute';
+import { PublicRoute } from '../hooks/PublicRoute';
 
-export default function App() {
+import { Home } from '../pages/Home';
+import { Registration } from '../pages/Registration';
+import { Login } from '../pages/Login';
+import { Contacts } from '../pages/Contacts';
+
+const App = () => {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(refreshUser());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
-    <Div>
-      <WrapPhonebook>
-        <Title>Phonebook</Title>
-        <ContactForm />
-      </WrapPhonebook>
-      <WrapContacts>
-        <Contacts>Contacts</Contacts>
-        <Filter />
-        <ContactList />
-      </WrapContacts>
-    </Div>
+    <div>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Home />} />
+          <Route
+            path="/register"
+            element={
+              <PublicRoute>
+                <Registration />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/contacts"
+            element={
+              <PrivateRoute>
+                <Contacts />
+              </PrivateRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Route>
+      </Routes>
+    </div>
   );
-}
+};
+
+export default App;

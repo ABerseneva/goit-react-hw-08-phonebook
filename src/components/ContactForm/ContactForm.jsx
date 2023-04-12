@@ -1,14 +1,19 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { nanoid } from 'nanoid';
-import { addContact } from 'redux/operations';
-import { Form, Button, Input, Label, WrapBtn } from './ContactFormStyled';
+import { addContact } from 'redux/contacts/operations';
+import { selectItems } from '../../redux/contacts/selectors';
+// import { Form, Button, Input, Label, WrapBtn } from './ContactFormStyled';
 
 function ContactForm() {
   const dispatch = useDispatch();
-  const contacts = useSelector(state => state.contacts);
+  const contacts = useSelector(selectItems);
   const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
+  const [number, setNumber] = useState('');
+  const user = {
+    name,
+    number,
+  };
 
   const handleChange = event => {
     const { name, value } = event.currentTarget;
@@ -17,8 +22,8 @@ function ContactForm() {
         setName(value);
         break;
 
-      case 'phone':
-        setPhone(value);
+      case 'number':
+        setNumber(value);
         break;
 
       default:
@@ -26,30 +31,34 @@ function ContactForm() {
     }
   };
 
-  const handleSubmit = event => {
-    event.preventDefault();
-
-    const id = nanoid();
-    const contact = { id, name, phone };
-
-    const saveContact = contacts.items.find(contact => contact.name === name);
-    if (saveContact) {
-      return alert('Contact is already added!');
+  const handleCheck = data => {
+    if (
+      contacts.some(
+        contact => contact.name.toLowerCase() === data.name.toLowerCase()
+      )
+    ) {
+      alert(`${data.name} is alredy in contact`);
+    } else {
+      dispatch(addContact(data));
     }
-    dispatch(addContact(contact));
+  };
+
+  const handleSubmit = e => {
+    e.preventDefault();
+    handleCheck(user);
     reset();
   };
 
   const reset = () => {
     setName('');
-    setPhone('');
+    setNumber('');
   };
 
   return (
-    <Form onSubmit={handleSubmit}>
-      <Label htmlFor={nanoid()}>
+    <form onSubmit={handleSubmit}>
+      <label htmlFor={nanoid()}>
         Name
-        <Input
+        <input
           type="text"
           name="name"
           placeholder="Name"
@@ -60,25 +69,25 @@ function ContactForm() {
           title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
           required
         />
-      </Label>
-      <Label htmlFor={nanoid()}>
+      </label>
+      <label htmlFor={nanoid()}>
         Number
-        <Input
+        <input
           type="tel"
-          name="phone"
-          placeholder="Phone"
-          value={phone}
+          name="number"
+          placeholder="Number"
+          value={number}
           onChange={handleChange}
           id={nanoid()}
           pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
           title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
           required
         />
-      </Label>
-      <WrapBtn>
-        <Button type="submit">Add contact</Button>
-      </WrapBtn>
-    </Form>
+      </label>
+      <div>
+        <button type="submit">Add contact</button>
+      </div>
+    </form>
   );
 }
 
